@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/attendance_bloc.dart';
@@ -53,7 +54,7 @@ class AttendanceScreen extends StatelessWidget {
             final bool inRange =
                 state.distance != null &&
                 state.distance! <= AppConstants.officeRadiusThreshold;
-  
+
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 40.0),
               child: Column(
@@ -122,11 +123,7 @@ class AttendanceScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
-                  child: Icon(
-                    Icons.map_outlined,
-                    color: Colors.blue,
-                    size: 40,
-                  ),
+                  child: Icon(Icons.map_outlined, color: Colors.blue, size: 40),
                 ),
               ),
               Container(
@@ -196,10 +193,9 @@ class AttendanceScreen extends StatelessWidget {
   Widget _buildDistanceIndicator(AttendanceState state, bool inRange) {
     final distance = state.distance ?? 0.0;
     // Calculate progress: 1.0 when at/inside 50m, decreasing as you move away.
-    final double targetValue =
-        distance > 0
-            ? (AppConstants.officeRadiusThreshold / distance).clamp(0.0, 1.0)
-            : 0;
+    final double targetValue = distance > 0
+        ? (AppConstants.officeRadiusThreshold / distance).clamp(0.0, 1.0)
+        : 0;
 
     return Column(
       children: [
@@ -277,7 +273,7 @@ class AttendanceScreen extends StatelessWidget {
           'Move within 50 meters of the designated office location\nto enable check-in.',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-        ),
+        )
       ],
     );
   }
@@ -287,57 +283,109 @@ class AttendanceScreen extends StatelessWidget {
     AttendanceState state,
     bool inRange,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.2),
-          style: BorderStyle.solid,
-        ),
+    return CustomPaint(
+      painter: DashedBorderPainter(
+        color: const Color(0xFFCBD5E1),
+        strokeWidth: 1.5,
+        gap: 4,
+        radius: 16,
       ),
-      child: Column(
-        children: [
-          Icon(
-            inRange ? Icons.lock_open : Icons.lock,
-            color: Colors.grey[400],
-            size: 40,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: inRange && !state.attendanceMarked
-                  ? () => context.read<AttendanceBloc>().add(MarkAttendance())
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCBD5E1),
-                foregroundColor: const Color(0xFF64748B),
-                disabledBackgroundColor: const Color(0xFFE2E8F0),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9).withOpacity(0.5),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              inRange ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+              color: const Color(0xFF94A3B8),
+              size: 44,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: inRange && !state.attendanceMarked
+                    ? () => context.read<AttendanceBloc>().add(MarkAttendance())
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFCBD5E1),
+                  foregroundColor: const Color(0xFF475569),
+                  disabledBackgroundColor: const Color(0xFFE2E8F0),
+                  disabledForegroundColor: const Color(0xFF94A3B8),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Mark Attendance',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-              child: const Text(
-                'Mark Attendance',
-                style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'AVAILABLE 09:00 AM - 10:30 AM',
+              style: TextStyle(
+                fontSize: 11,
+                color: Color(0xFF94A3B8),
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'AVAILABLE 09:00 AM - 10:30 AM',
-            style: TextStyle(
-              fontSize: 10,
-              color: Color(0xFF94A3B8),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
+
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double gap;
+  final double radius;
+
+  DashedBorderPainter({
+    required this.color,
+    this.strokeWidth = 1.0,
+    this.gap = 5.0,
+    this.radius = 0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final Path path = Path();
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(radius),
+      ),
+    );
+
+    final Path dashedPath = Path();
+    for (final PathMetric segment in path.computeMetrics()) {
+      double distance = 0.0;
+      while (distance < segment.length) {
+        dashedPath.addPath(
+          segment.extractPath(distance, distance + gap),
+          Offset.zero,
+        );
+        distance += gap * 2;
+      }
+    }
+    canvas.drawPath(dashedPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
