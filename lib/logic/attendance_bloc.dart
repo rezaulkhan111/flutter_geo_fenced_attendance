@@ -58,13 +58,12 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) {
     _positionSubscription?.cancel();
-    _positionSubscription =
-        Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            distanceFilter: 1,
-          ),
-        ).listen((Position position) {
+    _positionSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.best, // Use best accuracy
+        distanceFilter: 0, // Receive updates even for tiny movements
+      ),
+    ).listen((Position position) {
           double? distance;
           if (state.officeLocation != null) {
             distance = _locationRepository.calculateDistance(

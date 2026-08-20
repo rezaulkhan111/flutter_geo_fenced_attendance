@@ -195,6 +195,11 @@ class AttendanceScreen extends StatelessWidget {
 
   Widget _buildDistanceIndicator(AttendanceState state, bool inRange) {
     final distance = state.distance ?? 0.0;
+    // Calculate progress: 1.0 when at/inside 50m, decreasing as you move away.
+    final double targetValue =
+        distance > 0
+            ? (AppConstants.officeRadiusThreshold / distance).clamp(0.0, 1.0)
+            : 0;
 
     return Column(
       children: [
@@ -204,18 +209,20 @@ class AttendanceScreen extends StatelessWidget {
             SizedBox(
               width: 150,
               height: 150,
-              child: CircularProgressIndicator(
-                value: distance > 0
-                    ? (AppConstants.officeRadiusThreshold / distance).clamp(
-                        0.0,
-                        1.0,
-                      )
-                    : 0,
-                strokeWidth: 8,
-                backgroundColor: Colors.grey[200],
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  inRange ? Colors.green : Colors.redAccent,
-                ),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: targetValue),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+                builder: (context, value, child) {
+                  return CircularProgressIndicator(
+                    value: value,
+                    strokeWidth: 8,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      inRange ? Colors.green : Colors.redAccent,
+                    ),
+                  );
+                },
               ),
             ),
             Column(
