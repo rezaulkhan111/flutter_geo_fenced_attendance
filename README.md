@@ -37,8 +37,7 @@ Follow these steps to run the application locally:
 
 1.  **Clone the Repository:**
     ```bash
-    git clone <repository-url>
-    cd flutter_geo_fenced_attendance
+    git clone https://github.com/rezaulkhan111/flutter_geo_fenced_attendance.git
     ```
 
 2.  **Install Dependencies:**

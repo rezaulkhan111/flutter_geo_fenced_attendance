@@ -10,6 +10,7 @@ class AttendanceState extends Equatable {
   final AttendanceStatus status;
   final String? errorMessage;
   final bool attendanceMarked;
+  final bool isInRange;
 
   const AttendanceState({
     this.officeLocation,
@@ -18,6 +19,7 @@ class AttendanceState extends Equatable {
     this.status = AttendanceStatus.initial,
     this.errorMessage,
     this.attendanceMarked = false,
+    this.isInRange = false,
   });
 
   AttendanceState copyWith({
@@ -27,6 +29,7 @@ class AttendanceState extends Equatable {
     AttendanceStatus? status,
     String? errorMessage,
     bool? attendanceMarked,
+    bool? isInRange,
   }) {
     return AttendanceState(
       officeLocation: officeLocation ?? this.officeLocation,
@@ -35,6 +38,7 @@ class AttendanceState extends Equatable {
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
       attendanceMarked: attendanceMarked ?? this.attendanceMarked,
+      isInRange: isInRange ?? this.isInRange,
     );
   }
 
@@ -46,5 +50,6 @@ class AttendanceState extends Equatable {
     status,
     errorMessage,
     attendanceMarked,
+    isInRange,
   ];
 }

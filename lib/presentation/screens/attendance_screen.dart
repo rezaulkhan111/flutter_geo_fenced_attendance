@@ -269,11 +269,11 @@ class AttendanceScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Move within 50 meters of the designated office location\nto enable check-in.',
+        Text(
+          'Move within ${AppConstants.officeRadiusThreshold.toInt()} meters of the designated office location\nto enable check-in.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-        )
+          style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+        ),
       ],
     );
   }
