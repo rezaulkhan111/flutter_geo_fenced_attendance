@@ -87,4 +87,4 @@ Follow these steps to run the application locally:
 ## APK Submission
 
 The release APK can be downloaded from the following link:
-[Link to Release APK](https://github.com/rezaulkhan111/flutter_geo_fenced_attendance/refs/heads/master/photo/app-release.apk)
+[Link to Release APK](https://raw.githubusercontent.com/rezaulkhan111/flutter_geo_fenced_attendance/refs/heads/master/photo/app-release.apk)
