@@ -53,28 +53,50 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     }
   }
 
-  void _onTrackUserLocation(
+  Future<void> _onTrackUserLocation(
     TrackUserLocation event,
     Emitter<AttendanceState> emit,
-  ) {
+  ) async {
     _positionSubscription?.cancel();
+
+    try {
+      // Ensure we have permissions and GPS enabled before starting the stream
+      await _locationRepository.getCurrentLocation();
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: AttendanceStatus.failure,
+          errorMessage: 'Location permission or GPS is required.',
+        ),
+      );
+      return;
+    }
+
+    // Use a slightly more standard setting for the APK build to avoid OS blocking
+    const LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.best,
+      distanceFilter: 0,
+    );
+
     _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best, // Use best accuracy
-        distanceFilter: 0, // Receive updates even for tiny movements
-      ),
-    ).listen((Position position) {
-          double? distance;
-          if (state.officeLocation != null) {
-            distance = _locationRepository.calculateDistance(
-              position.latitude,
-              position.longitude,
-              state.officeLocation!.latitude,
-              state.officeLocation!.longitude,
-            );
-          }
-          add(UpdateUserLocation(position, distance));
-        });
+      locationSettings: locationSettings,
+    ).listen(
+      (Position position) {
+        double? distance;
+        if (state.officeLocation != null) {
+          distance = _locationRepository.calculateDistance(
+            position.latitude,
+            position.longitude,
+            state.officeLocation!.latitude,
+            state.officeLocation!.longitude,
+          );
+        }
+        add(UpdateUserLocation(position, distance));
+      },
+      onError: (error) {
+        add(TrackUserLocation()); // Retry tracking on error
+      },
+    );
   }
 
   void _onUpdateUserLocation(
