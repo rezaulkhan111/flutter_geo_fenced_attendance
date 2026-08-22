@@ -60,7 +60,6 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     _positionSubscription?.cancel();
 
     try {
-      // Ensure we have permissions and GPS enabled before starting the stream
       await _locationRepository.getCurrentLocation();
     } catch (e) {
       emit(
@@ -72,31 +71,29 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       return;
     }
 
-    // Use a slightly more standard setting for the APK build to avoid OS blocking
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.best,
       distanceFilter: 0,
     );
 
-    _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      (Position position) {
-        double? distance;
-        if (state.officeLocation != null) {
-          distance = _locationRepository.calculateDistance(
-            position.latitude,
-            position.longitude,
-            state.officeLocation!.latitude,
-            state.officeLocation!.longitude,
-          );
-        }
-        add(UpdateUserLocation(position, distance));
-      },
-      onError: (error) {
-        add(TrackUserLocation()); // Retry tracking on error
-      },
-    );
+    _positionSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) {
+            double? distance;
+            if (state.officeLocation != null) {
+              distance = _locationRepository.calculateDistance(
+                position.latitude,
+                position.longitude,
+                state.officeLocation!.latitude,
+                state.officeLocation!.longitude,
+              );
+            }
+            add(UpdateUserLocation(position, distance));
+          },
+          onError: (error) {
+            add(TrackUserLocation());
+          },
+        );
   }
 
   void _onUpdateUserLocation(
@@ -122,7 +119,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
           status: AttendanceStatus.markingSuccess,
         ),
       );
-      // Immediately reset status to success so the listener doesn't re-trigger
+
       emit(state.copyWith(status: AttendanceStatus.success));
     } else {
       emit(

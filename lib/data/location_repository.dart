@@ -7,15 +7,14 @@ class LocationRepository {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // 1. Check if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // On Android, this usually opens the Location settings so the user can toggle it on.
       await Geolocator.openLocationSettings();
-      return Future.error('Location services are disabled. Please turn them on.');
+      return Future.error(
+        'Location services are disabled. Please turn them on.',
+      );
     }
 
-    // 2. Check and request permissions.
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -25,18 +24,14 @@ class LocationRepository {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, we must open app settings.
       await Geolocator.openAppSettings();
       return Future.error(
         'Location permissions are permanently denied. Please enable them in App Settings.',
       );
     }
 
-    // 3. If everything is fine, get the position.
     return await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-      ),
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
   }
 

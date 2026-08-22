@@ -28,7 +28,6 @@ class AttendanceScreen extends StatelessWidget {
       body: SafeArea(
         child: BlocConsumer<AttendanceBloc, AttendanceState>(
           listenWhen: (previous, current) {
-            // Trigger only on failure or explicit success status
             return current.status == AttendanceStatus.failure ||
                 current.status == AttendanceStatus.markingSuccess;
           },
@@ -192,7 +191,7 @@ class AttendanceScreen extends StatelessWidget {
 
   Widget _buildDistanceIndicator(AttendanceState state, bool inRange) {
     final distance = state.distance ?? 0.0;
-    // Calculate progress: 1.0 when at/inside 50m, decreasing as you move away.
+
     final double targetValue = distance > 0
         ? (AppConstants.officeRadiusThreshold / distance).clamp(0.0, 1.0)
         : 0;
